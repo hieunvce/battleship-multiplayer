@@ -1,15 +1,61 @@
-#playerInfo {
-    margin: 1em 1em 1em 1em;
-    padding: 2em;
+.btn {
+    height: 2em;
+    border: solid black 2px;
+    border-radius: 10px;
 }
 
+#playerInfo {
+    margin: 1em;
+    padding: 2em;
+    font-size: 1.5em;
+}
 #playerInfo #player {
     float: left;
+    background: #c7dffc;
+    border: solid black 1px;
+    margin: 5px;
 }
 #playerInfo #logout {
     float: right;
 }
 
 #newRoom {
+    width: 50vw;
     padding: 2em;
+    text-align: center;
+    margin: 0 auto;
+}
+#newRoom #newRoomName {
+    height: 2em;
+    width: 75%;
+    border: solid black 2px;
+    border-radius: 10px;
+    padding: 5px;
+}
+#newRoom #btnCreateNewRoom {
+    height: 2em;
+    margin: 5px;
+}
+
+#availableRoom {
+    text-align: center;
+}
+#availableRoom #info {
+    width: 50vw;
+    background: #fffa75;
+    font-weight: bold;
+    margin: 0 auto;
+}
+#availableRoom #roomList {
+    width: 50vw;
+    border: solid black 2px;
+    padding: 1em;
+    margin: 0 auto;
+}
+.room {
+    padding: 0.25em;
+    text-align: center;
+    background: #a4c5f9;
+    border: solid black 2px;
+    border-radius: 10px;
 }
