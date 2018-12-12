@@ -1,0 +1,15 @@
+#playerInfo {
+    margin: 1em 1em 1em 1em;
+    padding: 2em;
+}
+
+#playerInfo #player {
+    float: left;
+}
+#playerInfo #logout {
+    float: right;
+}
+
+#newRoom {
+    padding: 2em;
+}

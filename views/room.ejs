@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Battleship Room</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="css/room.css" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/login.js"></script>
+    <script src="js/room.js"></script>
+</head>
+<body>
+    <div id="playerInfo">
+            <div id="player">Welcome Sir, <span id="playername"></span></div>
+            <input type="button" id="logout" value="Logout"/>
+    </div>
+    
+    <div id="newRoom">
+        <input type="text" id="newRoomName" placeholder="Enter new room name..."/>
+        <input type="button" id="btnCreateNewRoom" value="Create New Room"/>
+    </div>
+
+    <div>
+        <div>Available rooms</div>
+        <div>Choose one room to join and fight</div>
+        <div id="roomList"></div>
+    </div>
+    
+</body>
+</html>
