@@ -8,7 +8,7 @@ app.set("views", "./views");
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 var db = require("./playerDB");
-var bodyParser=require("body-parser");
+var bodyParser = require("body-parser");
 var urlencodedParser = require('urlencoded-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(urlencodedParser);
@@ -19,11 +19,11 @@ class Map {
         this.width = 10;
         this.height = 10;
         this.map = [];
-        this.aliveCell=20;
-        this.currentCell=[0,0];
+        this.aliveCell = 20;
+        this.currentCell = [0, 0];
     }
 
-    init(){
+    init() {
         let emptyMap = [];
         for (let i = 0; i < this.width; i++) {
             let row = [];
@@ -47,52 +47,100 @@ class Map {
     setCell(x, y, value) {
         this.map[x][y] = value;
     }
-    getMap(){
+    getMap() {
         return this.map;
     }
 
 }
 
 class Player {
-    constructor(username){
-        this.username = username;
-        this.socket_id="";
-        this.device_id="";
-        this.map=new Map;
+    constructor() {
+        this.username = "";
+        this.socket_id = "";
+        this.device_id = "";
+        this.map = new Map;
+        this.room = "";
     }
-    
-    getUsername(){
+
+    getUsername() {
         return this.username;
     }
-    setUsername(username){
-        this.username=username;
+    setUsername(username) {
+        this.username = username;
     }
-    getSocketId(){
+    getSocketId() {
         return this.socket_id;
     }
-    setSocketId(socket_id){
+    setSocketId(socket_id) {
         this.socket_id = socket_id;
     }
-    getDeviceId(){
+    getDeviceId() {
         return this.device_id;
     }
-    setDeviceId(device_id){
-        this.device_id=device_id;
+    setDeviceId(device_id) {
+        this.device_id = device_id;
     }
-    getMap(){
+    getMap() {
         return this.map;
     }
-    setMap(map){
-        this.map=map;
+    setMap(map) {
+        this.map = map;
+    }
+    getRoom() {
+        return this.room;
+    }
+    setRoom(room) {
+        this.room = room;
     }
 }
 
+class Room {
+    constructor() {
+        this.roomName = "";
+        this.player1 = new Player;
+        this.player2 = new Player;
+        this.numberOfPlayers = 0;
+    }
+    getRoomName() {
+        return this.roomName;
+    }
+    setRoomName(roomName) {
+        this.roomName = roomName;
+    }
+    getPlayer1() {
+        return this.player1;
+    }
+    setPlayer1(player) {
+        this.player1 = player;
+    }
+    getPlayer2() {
+        return this.player2;
+    }
+    setPlayer2(player) {
+        this.player2 = player;
+    }
+    getNumberOfPlayer() {
+        return this.numberOfPlayers;
+    }
+    setNumberOfPlayer(number) {
+        this.numberOfPlayers = number;
+    }
+
+}
+
+//Helper
+function isEmpty(obj) {
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key))
+            return false;
+    }
+    return true;
+}
 // Mang danh sach cac nguoi choi online
 var onlinePlayers = [];
 var roomList = [];
-var P1Map = new Map;
-P1Map.setSize(5,5);
-console.log("P1Map: "+JSON.stringify(P1Map.getMap()));
+
+
 server.listen(3000);
 console.log("Server is listening at port: 3000");
 
@@ -100,70 +148,74 @@ io.on("connection", function (socket) {
     console.log("ID connected: " + socket.id);
     socket.join("lobby");
 
-    socket.on("room-username",function(data){
-        console.log("Loged in player: "+data);
-        let playerInfo = onlinePlayers.find(player => player.username == data);
-        if (playerInfo != null && playerInfo != undefined){
-            onlinePlayers[onlinePlayers.indexOf(playerInfo)]["room"]="lobby";
+    socket.on("room-username", function (data) {
+        console.log("Loged in player: " + data);
+        let playerInfo = onlinePlayers.find(player => player.getUsername() == data);
+        if (!isEmpty(playerInfo)) {
+            onlinePlayers[onlinePlayers.indexOf(playerInfo)].setSocketId(socket.id);
             socket.username = data;
-            socket.emit("playerInfo",playerInfo);
-            console.log("Online players: "+JSON.stringify(onlinePlayers));
+            socket.emit("playerInfo", playerInfo);
+            console.log("Online players: " + JSON.stringify(onlinePlayers));
         } else {
-            let nullplayer={};
-            nullplayer.username="!!null!!"
-            socket.emit("playerInfo",nullplayer);
+            let nullplayer = new Player;
+            nullplayer.setUsername("!!null!!");
+            socket.emit("playerInfo", nullplayer);
         }
     });
-    socket.emit("roomList",roomList);
+    socket.emit("roomList", roomList);
 
-    socket.on("room-logout",function(){
+    socket.on("room-logout", function () {
         // Remove player from online player list
-        let player = onlinePlayers.find(el => el.username == socket.username);
-        if (player != null && player != undefined){
-            onlinePlayers.splice(onlinePlayers.indexOf(player),1);
+        let player = onlinePlayers.find(el => el.getUsername() == socket.username);
+        if (player != null && player != undefined) {
+            onlinePlayers.splice(onlinePlayers.indexOf(player), 1);
         }
-        console.log("Loged out: "+socket.username);
-        console.log("Online players: "+JSON.stringify(onlinePlayers));
+        console.log("Loged out: " + socket.username);
+        console.log("Online players: " + JSON.stringify(onlinePlayers));
         socket.emit("logedOut");
     });
 
-    socket.on("room-gotoRoom",function(roomName){
-        
-        let room = roomList.find(el => el.name == roomName);
+    socket.on("room-gotoRoom", function (roomName) {
+        console.log("Go to room...");
+        let room = roomList.find(el => el.getRoomName() == roomName);
         let status = false;
 
-        if (room==undefined || room==null){
-            room = {};
-            room.name = roomName;
-            room.p1 = socket.username;
-            room.p2 = "";
-            room.n=1;
-            socket.join(room.name);
-            status=true;
+        if (isEmpty(room)) {
+            room = new Room;
+            room.setRoomName(roomName);
+            let player1 = onlinePlayers.find(el => el.getUsername() == socket.username);
+            room.setPlayer1(player1);
+            room.setNumberOfPlayer(1);
+            socket.join(room.getRoomName());
+            roomList.push(room);
+            status = true;
         } else {
-            roomList.splice(roomList.indexOf(room),1);
-            if (room.p1==""){
-                room.p1=socket.username;
-                room.n=2;
-                status=true;
-            } else if (room.p2==""){
-                room.p2=socket.username;
-                room.n=2;
-                status=true;
+            let player1 = room.getPlayer1();
+            let player2 = room.getPlayer2();
+            if (player1 != undefined && player1.getUsername == "") {
+                room.getPlayer1().setUsername(socket.username);
+                room.setNumberOfPlayer(2);
+                status = true;
+            } else if (player2 != undefined && player2.getUsername == "") {
+                room.getPlayer2().setUsername(socket.username);
+                room.setNumberOfPlayer(2);
+                status = true;
             } else {
-                socket.emit("joinRoomFail");
-                status=false;
+                status = false;
             }
         }
-        if (status == true){
-        roomList.push(room);
-        socket.emit("goToNewRoomBro",room.name);
+        if (status == true) {
+            roomList.push(room);
+            socket.emit("goToNewRoomBro", room);
+        } else {
+            socket.emit("joinRoomFail");
         }
-        console.log("Room list: "+JSON.stringify(roomList));
-        socket.broadcast.emit("roomList",roomList);
+        console.log("Room list: " + JSON.stringify(roomList));
+        socket.broadcast.emit("roomList", roomList);
+
     });
 
-    socket.on("disconnect",function(){
+    socket.on("disconnect", function () {
         console.log(socket.id + " has disconnected");
     });
 });
@@ -184,7 +236,7 @@ app.get("/room", function (req, res) {
     res.render("room");
 });
 
-app.get("/setship",function(req, res){
+app.get("/setship", function (req, res) {
     res.render("setship");
 });
 
@@ -193,21 +245,23 @@ app.post('/login', urlencodedParser, function (req, res) {
 
     let username = req.body.username;
     let password = req.body.password;
-    let newPlayer={};
-    newPlayer["username"] = req.body.username;
-    console.log("New player: "+JSON.stringify(newPlayer));
+    let newPlayer = new Player;
+    newPlayer.setUsername(req.body.username);
+    console.log("New player: " + JSON.stringify(newPlayer));
     db.selectPlayer(username, password, function (isExist) {
         // If account exists in database
         if (isExist) {
-            let foundPlayer = onlinePlayers.filter(function(player){return player.username === username});
-            if (foundPlayer.username==""){
-                res.send({ "loginStatus":"onlined" });
+            let foundPlayer = onlinePlayers.find(el => el.getUsername() == username);
+            console.log("Found player: " + JSON.stringify(foundPlayer));
+            if (!isEmpty(foundPlayer)) {
+                // the array is defined and has at least one element
+                res.send({ "loginStatus": "onlined" });
             } else {
                 onlinePlayers.push(newPlayer);
-                res.send({"loginStatus":"success"});
+                res.send({ "loginStatus": "success" });
             }
         } else {
-            res.send({"loginStatus":"failed"})
+            res.send({ "loginStatus": "failed" })
         }
     });
 
@@ -216,7 +270,7 @@ app.post('/login', urlencodedParser, function (req, res) {
 app.post('/register', urlencodedParser, function (req, res) {
     let username = req.body.username;
     let password = req.body.password;
-    
+
     db.findPlayer(username, function (isExist) {
         if (isExist) {
             res.send({ "registerStatus": "usernameExisted" });

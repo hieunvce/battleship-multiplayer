@@ -26,10 +26,11 @@ $(document).ready(function () {
     socket.emit("room-username", logedInUser);
 
     socket.on("roomList", function (data) {
+        console.log("Roomlist received"+JSON.stringify(data))
         $("#roomList").html("");
         data.forEach(room => {
-            if (room.n < 2) {
-                $("#roomList").append('<div class="room">'+ room.name + '</div>');
+            if (room.numberOfPlayers < 2) {
+                $("#roomList").append('<div class="room">'+ room.roomName + '</div>');
             }
         });
     });
@@ -49,10 +50,17 @@ $(document).ready(function () {
     });
 
     socket.on("goToNewRoomBro", function (newRoom) {
-        document.cookie = "userRoom=" + newRoom + ";path=/";
+        console.log("Go to new room"+JSON.stringify(newRoom));
+        document.cookie = "userRoom=" + newRoom.roomName + ";path=/";
         window.location = '/setship';
     });
+    socket.on("joinRoomFail",function(){
+        $("#info").html(playerInfo.username);
+    });
 
+    socket.on("disconnect",function(){
+        socket.emit("room-username", logedInUser);
+    });
     $("#logout").click(function () {
         socket.emit("room-logout");
     });
