@@ -1,8 +1,9 @@
 $(document).ready(function () {
     // Nho sua lai khi xong viec
     $("#setMap").hide();
-    $("#playGame").show();
-    $("#setRoom").hide();
+    $("#playGame").hide();
+    $("#setDevice").show();
+    $("#setRoom").show();
 
     function getCookie(cname) {
         var name = cname + "=";
@@ -24,6 +25,14 @@ $(document).ready(function () {
 
     var socket = io("http://localhost:3000");
     socket.emit("room-username", logedInUser);
+
+    socket.on("deviceList", function (data) {
+        console.log("Devicelist received" + JSON.stringify(data))
+        $("#deviceList").html("");
+        data.forEach(device => {
+                $("#deviceList").append('<div class="device">' + device + '</div>');
+        });
+    });
 
     socket.on("roomList", function (data) {
         console.log("Roomlist received" + JSON.stringify(data))
@@ -52,6 +61,7 @@ $(document).ready(function () {
     socket.on("goToNewRoomBro", function (newRoom) {
         console.log("Go to new room" + JSON.stringify(newRoom));
         document.cookie = "userRoom=" + newRoom.roomName + ";path=/";
+        $("#setDevice").hide();
         $("#setRoom").hide();
         $("#playGame").show(2000);
         $("#setMap").hide();
@@ -65,6 +75,12 @@ $(document).ready(function () {
     });
     $("#logout").click(function () {
         socket.emit("room-logout");
+    });
+
+    $(document).on("click", "#deviceList div.device", function () {
+        let deviceName = $(this).text();
+        console.log("Device Name " + deviceName + " has been clicked");
+        socket.emit("room-setDevice", deviceName);
     });
 
     $("#btnCreateNewRoom").click(function () {
@@ -86,46 +102,69 @@ $(document).ready(function () {
 
     //GAME------------------------------------------------------------------
     //DRAW------------------------------------------------------------------
-    var initMap = '<tbody>';
-    for (let i = 0; i < 10; i++) {
-        let row = '<tr>';
-        for (let j = 0; j < 10; j++) {
-            row += '<td id="' + i + j + '" class="empty"></td>';
+    var initMap = function (classValue) {
+        let init = '<tbody>';
+        for (let i = 0; i < 10; i++) {
+            let row = '<tr>';
+            for (let j = 0; j < 10; j++) {
+                row += '<td id="' + i + j + '" class="' + classValue + '"></td>';
+            }
+            row += '</tr>';
+            init += row;
         }
-        row += '</tr>';
-        initMap += row;
+        init += '</tbody>';
+        return init;
     }
-    initMap+='</tbody>';
-    $("#playerMap").html(initMap);
-    $("#opponentMap").html(initMap);
-    
-    var getCellClass = function(x,y){
+
+    var redrawMap = function(map){
+        /*let init = '<tbody>';
+        for (let i = 0; i < 10; i++) {
+            let row = '<tr>';
+            for (let j = 0; j < 10; j++) {
+                
+                row += '<td id="' + i + j + '" class="' + classValue + '"></td>';
+            }
+            row += '</tr>';
+            init += row;
+        }
+        init += '</tbody>';
+        return init;
+        */
+       console.log(map);
+    }
+
+    $("#playerMap").html(initMap('empty'));
+    $("#opponentMap").html(initMap('unknow'));
+
+    var getCellClass = function (x, y) {
         let table = $("#opponentMap")[0];
         let cell = table.rows[x].cells[y];
         cellClass = $(cell).attr('class');
         return cellClass;
     }
-    var setCell = function(x,y,className){
+    var setCell = function (x, y, className) {
         let table = $("#opponentMap")[0];
         let cell = table.rows[x].cells[y];
         $(cell).toggleClass(className);
     }
-    
-    //GAME---------------------------------------------------------------
-    var oldPositionX=0;
-    var oldPositionY=0;
-    var oldPositionClass="";
 
-    socket.on("playerPosition", function(position){
-        let x=position.x;
-        let y=position.y;
-        setCell(oldPositionX,oldPositionY,oldPositionClass);
-        oldPositionX=x;
-        oldPositionY=y;
-        oldPositionClass=getCellClass(x,y);
-        setCell(x,y,"current");
+    //GAME---------------------------------------------------------------
+    var oldPositionX = 0;
+    var oldPositionY = 0;
+    var oldPositionClass = "";
+
+    socket.on("playerPosition", function (position) {
+        let x = position.x;
+        let y = position.y;
+        setCell(oldPositionX, oldPositionY, oldPositionClass);
+        oldPositionX = x;
+        oldPositionY = y;
+        oldPositionClass = getCellClass(x, y);
+        setCell(x, y, "current");
     })
 
-    
+    socket.on("changeMap", function (map) {
+        redrawMap(map);
+    });
 
 });

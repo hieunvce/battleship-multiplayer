@@ -20,6 +20,36 @@
     float: right;
 }
 
+#setDevice {
+    float: left;
+}
+
+#setDevice #deviceInfo {
+    width: 25vw;
+    background: #fffa75;
+    font-weight: bold;
+    margin: 0 auto;
+}
+
+#setDevice #deviceList {
+    width: 25vw;
+    border: solid black 2px;
+    padding: 1em;
+    margin: 0 auto;
+}
+
+.device {
+    padding: 0.25em;
+    text-align: center;
+    background: #66f561;
+    border: solid black 2px;
+    border-radius: 10px;
+}
+
+#setRoom {
+    float: right;
+}
+
 #newRoom {
     width: 50vw;
     padding: 2em;
@@ -95,6 +125,7 @@ td {
 #player #playerStatus {
     color: blue;
 }
+
 #player #playerMap {
     background: whitesmoke;
 }
@@ -106,6 +137,7 @@ td {
 #opponent #opponentStatus {
     color: red
 }
+
 #opponent #opponentMap {
     background: whitesmoke;
 }
@@ -123,6 +155,11 @@ td {
     border-radius: 10px;
     text-align: center;
 }
+
 .current {
     border: solid 2px red;
+}
+
+.unknow {
+    background: grey;
 }
