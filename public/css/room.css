@@ -10,10 +10,12 @@
     font-size: 1.5em;
     text-transform: uppercase;
 }
+
 #playerInfo #player {
     float: left;
     margin: 5px;
 }
+
 #playerInfo #logout {
     float: right;
 }
@@ -24,6 +26,7 @@
     text-align: center;
     margin: 0 auto;
 }
+
 #newRoom #newRoomName {
     height: 2em;
     width: 75%;
@@ -31,6 +34,7 @@
     border-radius: 10px;
     padding: 5px;
 }
+
 #newRoom #btnCreateNewRoom {
     height: 2em;
     margin: 5px;
@@ -39,22 +43,86 @@
 #availableRoom {
     text-align: center;
 }
+
 #availableRoom #info {
     width: 50vw;
     background: #fffa75;
     font-weight: bold;
     margin: 0 auto;
 }
+
 #availableRoom #roomList {
     width: 50vw;
     border: solid black 2px;
     padding: 1em;
     margin: 0 auto;
 }
+
 .room {
     padding: 0.25em;
     text-align: center;
     background: #a4c5f9;
     border: solid black 2px;
     border-radius: 10px;
+}
+
+/*Game Field*/
+
+#gameField {
+    padding: 10px;
+    margin: 5px;
+    text-align: center;
+}
+
+table {
+    border: solid 1px black;
+    table-layout: fixed;
+    width: 400px;
+    height: 400px;
+}
+
+tr,
+td {
+    width: 40px;
+    height: 40px;
+    border: solid 1px black;
+}
+
+#player {
+    float: left;
+}
+
+#player #playerStatus {
+    color: blue;
+}
+#player #playerMap {
+    background: whitesmoke;
+}
+
+#opponent {
+    float: right;
+}
+
+#opponent #opponentStatus {
+    color: red
+}
+#opponent #opponentMap {
+    background: whitesmoke;
+}
+
+.status {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 2em;
+}
+
+#timer {
+    color: black;
+    font-size: 3em;
+    border: solid 1px black;
+    border-radius: 10px;
+    text-align: center;
+}
+.current {
+    border: solid 2px red;
 }

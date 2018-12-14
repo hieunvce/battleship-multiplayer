@@ -187,16 +187,15 @@ io.on("connection", function (socket) {
             room.setPlayer1(player1);
             room.setNumberOfPlayer(1);
             socket.join(room.getRoomName());
-            roomList.push(room);
             status = true;
         } else {
             let player1 = room.getPlayer1();
             let player2 = room.getPlayer2();
-            if (player1 != undefined && player1.getUsername == "") {
+            if (player1 != undefined && player1.getUsername() == "") {
                 room.getPlayer1().setUsername(socket.username);
                 room.setNumberOfPlayer(2);
                 status = true;
-            } else if (player2 != undefined && player2.getUsername == "") {
+            } else if (player2 != undefined && player2.getUsername() == "") {
                 room.getPlayer2().setUsername(socket.username);
                 room.setNumberOfPlayer(2);
                 status = true;
@@ -214,7 +213,6 @@ io.on("connection", function (socket) {
         socket.broadcast.emit("roomList", roomList);
 
     });
-
     socket.on("disconnect", function () {
         console.log(socket.id + " has disconnected");
     });
@@ -280,5 +278,12 @@ app.post('/register', urlencodedParser, function (req, res) {
         }
     })
 });
+
+app.post('/gamepad',urlencodedParser, function (req, res) {
+    let device_id = req.body.device_id;
+    let key = req.body.key;
+});
+//socket.emit("playerPosition",position);
+// Xu ly vuj truyen du lieu nay len socket
 
 
