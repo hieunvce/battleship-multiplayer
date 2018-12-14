@@ -6,13 +6,12 @@
 
 #playerInfo {
     margin: 1em;
-    padding: 2em;
+    padding: 1em;
     font-size: 1.5em;
+    text-transform: uppercase;
 }
 #playerInfo #player {
     float: left;
-    background: #c7dffc;
-    border: solid black 1px;
     margin: 5px;
 }
 #playerInfo #logout {

@@ -1,5 +1,9 @@
 $(document).ready(function () {
 
+    $("#setMap").hide();
+    $("#playGame").hide();
+    $("#setRoom").show();
+    
     function getCookie(cname) {
         var name = cname + "=";
         var decodedCookie = decodeURIComponent(document.cookie);

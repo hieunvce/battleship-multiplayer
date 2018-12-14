@@ -1,3 +1,5 @@
+"use strict";
+
 var express = require("express");
 var app = express();
 app.use(express.static("public"));
@@ -11,10 +13,86 @@ var urlencodedParser = require('urlencoded-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(urlencodedParser);
 
+// Classes
+class Map {
+    constructor() {
+        this.width = 10;
+        this.height = 10;
+        this.map = [];
+        this.aliveCell=20;
+        this.currentCell=[0,0];
+    }
+
+    init(){
+        let emptyMap = [];
+        for (let i = 0; i < this.width; i++) {
+            let row = [];
+            for (let j = 0; j < this.height; j++) {
+                row[j] = 0;
+            }
+            emptyMap.push(row);
+        }
+        this.map = emptyMap;
+    }
+
+    setSize(width, height) {
+        this.width = width;
+        this.height = height;
+        this.init();
+    }
+
+    getCell(x, y) {
+        return this.map[x][y];
+    }
+    setCell(x, y, value) {
+        this.map[x][y] = value;
+    }
+    getMap(){
+        return this.map;
+    }
+
+}
+
+class Player {
+    constructor(username){
+        this.username = username;
+        this.socket_id="";
+        this.device_id="";
+        this.map=new Map;
+    }
+    
+    getUsername(){
+        return this.username;
+    }
+    setUsername(username){
+        this.username=username;
+    }
+    getSocketId(){
+        return this.socket_id;
+    }
+    setSocketId(socket_id){
+        this.socket_id = socket_id;
+    }
+    getDeviceId(){
+        return this.device_id;
+    }
+    setDeviceId(device_id){
+        this.device_id=device_id;
+    }
+    getMap(){
+        return this.map;
+    }
+    setMap(map){
+        this.map=map;
+    }
+}
+
 // Mang danh sach cac nguoi choi online
 var onlinePlayers = [];
 var roomList = [];
-
+var P1Map = new Map;
+P1Map.setSize(5,5);
+console.log("P1Map: "+JSON.stringify(P1Map.getMap()));
 server.listen(3000);
 console.log("Server is listening at port: 3000");
 
@@ -148,3 +226,5 @@ app.post('/register', urlencodedParser, function (req, res) {
         }
     })
 });
+
+
