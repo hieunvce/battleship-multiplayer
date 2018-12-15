@@ -163,3 +163,10 @@ td {
 .unknow {
     background: grey;
 }
+
+.hit {
+    background: red;
+}
+.miss {
+    background: black;
+}

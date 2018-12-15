@@ -31,7 +31,7 @@ class Map {
         for (let i = 0; i < this.width; i++) {
             let row = [];
             for (let j = 0; j < this.height; j++) {
-                row[j] = 0;
+                row[j] = '0';
             }
             emptyMap.push(row);
         }
@@ -72,7 +72,13 @@ class Map {
     getY() {
         return this.y;
     }
-    changeCurrentCell(key) {
+    getLocation() {
+        let location = [];
+        location.push(this.x);
+        location.push(this.y);
+        return location;
+    }
+    changeLocation(key) {
         switch (key) {
             case 'U':
                 if (this.y == 0) {
@@ -101,21 +107,26 @@ class Map {
                 } else {
                     this.x++;
                 }
-                break;
+        }
+    }
+    fire(key) {
+        switch (key) {
             case 'O':
-                switch (this.getCell(this.x, this.y)) {
+            console.log("Location: "+this.x+" "+this.y+" "+this.map[this.x][this.y]);
+                switch (this.map[this.x][this.y]) {
                     case '0':
-                        this.setCell(x, y, "miss");
+                        this.map[this.x][this.y] = "miss";
+                        console.log("Miss :v");
                         break;
                     case 'alive':
-                        this.setCell(x, y, "hit");
+                        this.map[this.x][this.y] = "hit";
                         this.aliveCell--;
-                        break;
+                        console.log("Hit :D");
                 }
                 break;
             case 'C':
-                break;
         }
+        return this.map[this.x][this.y];
     }
 }
 
@@ -211,7 +222,8 @@ function isEmpty(obj) {
 // Mang danh sach cac nguoi choi online
 var playerList = [];
 var roomList = [];
-var deviceList = []
+var deviceList = [];
+var deviceListToChoice = [];
 
 server.listen(3000);
 console.log("Server is listening at port: 3000");
@@ -254,8 +266,8 @@ io.on("connection", function (socket) {
         if (!isEmpty(player)) {
             playerList[playerList.indexOf(player)].setDeviceId(deviceName);
         }
-        deviceList.splice(deviceList.indexOf(deviceName), 1);
-        io.sockets.emit("deviceList", deviceList);
+        deviceListToChoice.splice(deviceListToChoice.indexOf(deviceName), 1);
+        io.sockets.emit("deviceList", deviceListToChoice);
     });
 
     socket.on("room-gotoRoom", function (roomName) {
@@ -376,58 +388,87 @@ app.post('/registerdevice', urlencodedParser, function (req, res) {
     console.log("A device with device_id=" + device_id + " has connected.");
     if (!deviceList.includes(device_id)) {
         deviceList.push(device_id);
+        deviceListToChoice.push(device_id);
     }
     console.log("Device list: " + deviceList);
-    io.sockets.emit("deviceList", deviceList);
+    io.sockets.emit("deviceList", deviceListToChoice);
     res.sendStatus(200);
 });
 
-var changeMap = function (device_id, key) {
+var changeLocationOnOpponentMap = function (device_id, key) {
     try {
         let player = playerList.find(el => el.getDeviceId() == device_id);
-        console.log("Change map: Found player = " + JSON.stringify(player));
+        //console.log("changeLocationOnOpponentMap: Found player = " + JSON.stringify(player));
         let room = roomList.find(el => el.getRoomName() == player.getRoom());
         if (isEmpty(room)) {
-            console.log("changeMap: No room error.");
+            console.log("changeMap: Error: No room found.");
             return false;
         } else {
             if (room.getPlayer1().getUsername() == player.getUsername()) {
-                room.getPlayer2().getMap().changeCurrentCell(key);
-                let x = room.getPlayer2().getMap().getX();
-                let y = room.getPlayer2().getMap().getY();
-                let currentCell = room.getPlayer2().getMap().getCell(x, y);
-                if (currentCell == 'hit' || currentCell == 'miss') {
-                    room.getPlayer1().getOpponentMap().setCell(x, y, currentCell);
-                }
-                io.to(player.getRoom()).emit("changeMap", room.getPlayer1().getOpponentMap());
-                io.to(player.getRoom()).emit("playerPosition", room.getPlayer1().getOpponentMap());
+                // If key was sent by Player 1
+                // Then change location on Player 2 map
+                room.getPlayer2().getMap().changeLocation(key);
+                let newP2Location = room.getPlayer2().getMap().getLocation();
+                io.to(player.getSocketId()).emit("changeLocation", newP2Location);
+                console.log("New P2 Location:  " + newP2Location);
             } else if (room.getPlayer2().getUsername() == player.getUsername()) {
-                room.getPlayer1().getMap().changeCurrentCell(key);
-                let x = room.getPlayer1().getMap().getX();
-                let y = room.getPlayer1().getMap().getY();
-                let currentCell = room.getPlayer1().getMap().getCell(x, y);
-                if (currentCell == 'hit' || currentCell == 'miss') {
-                    room.getPlayer2().getOpponentMap().setCell(x, y, currentCell);
-                }
-                io.to(player.getRoom()).emit("changeMap", room.getPlayer2().getOpponentMap());
-                io.to(player.getRoom()).emit("playerPosition", room.getPlayer2().getOpponentMap());
-                //luu y emit dung nguoi
+                // If key was sent by Player 2
+                // Then change location on Player 1 map
+                room.getPlayer1().getMap().changeLocation(key);
+                let newP1Location = room.getPlayer1().getMap().getLocation();
+                io.to(player.getSocketId()).emit("changeLocation", newP1Location);
+                console.log("New P1 Location" + newP1Location);
             }
             return true;
         }
-        console.log("Change Map");
     } catch (err) {
-        console.log('Error changemap'+err);
+        console.log('Error location' + err);
+    }
+}
+
+var fireInTheHole = function (device_id, key) {
+    try {
+        let player = playerList.find(el => el.getDeviceId() == device_id);
+        //console.log("changeLocationOnOpponentMap: Found player = " + JSON.stringify(player));
+        let room = roomList.find(el => el.getRoomName() == player.getRoom());
+        if (isEmpty(room)) {
+            console.log("changeMap: Error: No room found.");
+            return false;
+        } else {
+            if (room.getPlayer1().getUsername() == player.getUsername()) {
+                // If key was sent by Player 1
+                // Then fire on current location on Player 2 map
+                let hitOrMiss = room.getPlayer2().getMap().fire(key);
+                io.to(player.getSocketId()).emit("hitOrMiss", hitOrMiss);
+                console.log("New P2 hitOrMiss:  " + hitOrMiss);
+            } else if (room.getPlayer2().getUsername() == player.getUsername()) {
+                // If key was sent by Player 2
+                // Then fire on current location on Player 1 map
+                let hitOrMiss = room.getPlayer1().getMap().fire(key);
+                io.to(player.getSocketId()).emit("hitOrMiss", hitOrMiss);
+                console.log("New P1 hitOrMiss:  " + hitOrMiss);
+            }
+            return true;
+        }
+    } catch (err) {
+        console.log('Error location' + err);
     }
 }
 
 app.post('/device', urlencodedParser, function (req, res) {
     let device_id = req.body.device_id;
     let key = req.body.key;
-    if (changeMap(device_id, key)) {
-        res.sendStatus(200);
-    } else {
-        res.sendStatus(400);
-    };
+    if (key == 'U' || key == 'D' || key == 'L' || key == 'R') {
+        if (changeLocationOnOpponentMap(device_id, key)) {
+            res.sendStatus(200);
+        } else {
+            res.sendStatus(400);
+        };
+    } else if (key == 'O' || key == 'C') {
+        if (fireInTheHole(device_id, key)) {
+            res.sendStatus(200);
+        } else {
+            res.sendStatus(400);
+        };
+    }
 });
-// Xu ly vuj truyen du lieu nay len socket

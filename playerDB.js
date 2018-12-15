@@ -64,12 +64,14 @@ module.exports = {
         var sql = "SELECT id FROM player WHERE username= ? AND password= ?";
         try {
             pool.query(sql, [name, pass], function (err, result, fields) {
-                if (err)
-                    throw err;
-                if (result[0] == null) {
-                    callback(false);
+                if (err) {
+                    console.log(err);
                 } else {
-                    callback(true);
+                    if (result[0] == null) {
+                        callback(false);
+                    } else {
+                        callback(true);
+                    }
                 }
             });
         } catch (err) {

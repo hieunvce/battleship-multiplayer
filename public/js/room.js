@@ -30,7 +30,7 @@ $(document).ready(function () {
         console.log("Devicelist received" + JSON.stringify(data))
         $("#deviceList").html("");
         data.forEach(device => {
-                $("#deviceList").append('<div class="device">' + device + '</div>');
+            $("#deviceList").append('<div class="device">' + device + '</div>');
         });
     });
 
@@ -101,6 +101,13 @@ $(document).ready(function () {
 
 
     //GAME------------------------------------------------------------------
+    //GAME Variables---------------------------------------------------------------
+    var currentX=0;
+    var currentY=0;
+    var oldPositionX = 0;
+    var oldPositionY = 0;
+    var oldPositionClass = "unknow";
+
     //DRAW------------------------------------------------------------------
     var initMap = function (classValue) {
         let init = '<tbody>';
@@ -116,21 +123,9 @@ $(document).ready(function () {
         return init;
     }
 
-    var redrawMap = function(map){
-        /*let init = '<tbody>';
-        for (let i = 0; i < 10; i++) {
-            let row = '<tr>';
-            for (let j = 0; j < 10; j++) {
-                
-                row += '<td id="' + i + j + '" class="' + classValue + '"></td>';
-            }
-            row += '</tr>';
-            init += row;
-        }
-        init += '</tbody>';
-        return init;
-        */
-       console.log(map);
+    var redrawMap = function (hitOrMiss) {
+        addClassToCell(currentX,currentY,hitOrMiss);
+        console.log("Add class "+hitOrMiss+" to cell "+currentX+" "+currentY);
     }
 
     $("#playerMap").html(initMap('empty'));
@@ -138,33 +133,37 @@ $(document).ready(function () {
 
     var getCellClass = function (x, y) {
         let table = $("#opponentMap")[0];
-        let cell = table.rows[x].cells[y];
+        let cell = table.rows[y].cells[x];
         cellClass = $(cell).attr('class');
         return cellClass;
     }
-    var setCell = function (x, y, className) {
+    var addClassToCell = function (x, y, className) {
         let table = $("#opponentMap")[0];
-        let cell = table.rows[x].cells[y];
-        $(cell).toggleClass(className);
+        let cell = table.rows[y].cells[x];
+        $(cell).addClass(className);
+    }
+    var removeClassFromCell = function (x, y, className) {
+        let table = $("#opponentMap")[0];
+        let cell = table.rows[y].cells[x];
+        $(cell).removeClass(className);
     }
 
-    //GAME---------------------------------------------------------------
-    var oldPositionX = 0;
-    var oldPositionY = 0;
-    var oldPositionClass = "";
-
-    socket.on("playerPosition", function (position) {
-        let x = position.x;
-        let y = position.y;
-        setCell(oldPositionX, oldPositionY, oldPositionClass);
+    socket.on("changeLocation", function (location) {
+        console.log("New location: " + JSON.stringify(location));
+        let x = location[0];
+        let y = location[1];
+        currentX=x;
+        currentY=y;
+        console.log("Update location: " + x + ", " + y + " Old class: " + oldPositionClass);
+        removeClassFromCell(oldPositionX, oldPositionY, 'current');
         oldPositionX = x;
         oldPositionY = y;
-        oldPositionClass = getCellClass(x, y);
-        setCell(x, y, "current");
+        oldPositionClass = getCellClass(y, x);
+        addClassToCell(x, y, "current");
     })
 
-    socket.on("changeMap", function (map) {
-        redrawMap(map);
+    socket.on("hitOrMiss", function (hitOrMiss) {
+        redrawMap(hitOrMiss);
     });
 
 });
