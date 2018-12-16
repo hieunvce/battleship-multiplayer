@@ -14,28 +14,118 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(urlencodedParser);
 
 // Classes
+class Ship {
+    constructor(name, start, end) {
+        this.name = name;
+        this.sunk = false;
+
+        this.spots = [];
+
+        if (start.y == end.y) {
+            //Neu tau nam ngang
+            for (let i = start.x; i <= end.x; i++) {
+                this.spots.push({
+                    x: i, y: start.y, hit: false
+                });
+            }
+        } else {
+            //Neu tau nam doc
+            for (let i = start.y; i <= end.y; i++) {
+                this.spots.push({
+                    x: start.x, y: i, hit: false
+                })
+            }
+        }
+    }
+
+    applyHit(target) {
+        // Kiem tra xem ban trung khong
+        let index = this.spots.indexOf(this.spots.find((spot) => spot.x == target.x && spot.y == target.y))
+        this.spots[index].hit = true;
+
+        // Neu tat ca ca diem da bi ban thi tau chim
+        if (this.spots.every(spot => spot.hit === true)) {
+            this.sunk = true;
+        }
+    }
+}
 class Map {
     constructor() {
+        let self = this;
+        this.sunkenShips = 0;
+        this.map = [];
+        for (let i = 0; i < 10; i++) {
+            this.map.push(new Array(10).fill(0));
+        }
+        this.ships = [];
+
+        // Place random a ship on field
+        function placeRandom(length) {
+            let randomX = -5;
+            let randomY = -5;
+            // Random a place
+            while (randomX + length < 0 || randomX + length > 9 || randomY + length < 0 || randomY + length > 9) {
+                randomX = Math.floor(Math.random() * 10);
+                randomY = Math.floor(Math.random() * 10);
+            }
+            //Random a direction 'H' or 'V'
+            let randomDir = Math.random() < 0.5 ? "H" : "V";
+            let ship;
+            if (randomDir == "V") {
+                ship = new Ship(`ship${length + 1}`, {
+                    x: randomX, y: randomY
+                }, {
+                        x: randomX, y: randomY + length
+                    });
+            } else {
+                ship = new Ship(`ship${length + 1}`, {
+                    x: randomX, y: randomY
+                }, {
+                        x: randomX + length, y: randomY
+                    });
+            }
+            // check if spots have already been taken:
+            let spotisValid = true
+            ship.spots.forEach(spot => {
+                if (self.map[spot.x][spot.y] != 0) {
+                    spotisValid = false;
+                }
+            });
+
+            if (spotisValid) {
+                self.ships.push(ship);
+                ship.spots.forEach(spot => {
+                    self.map[spot.x][spot.y] = 1;
+                });
+            }
+
+            return spotisValid;
+        }
+
+        // NOTE ship lengths of 5,4,4,3,1  need to be -1
+        let stockShips = [4, 3, 3, 2, 1];
+        stockShips.forEach(length => {
+            let happened;
+            do {
+                happened = placeRandom(length);
+            } while (!happened)
+
+        });
+        let count = 0;
+        this.map.forEach(row => row.forEach(coord => {
+            if (coord == 1) {
+                count++;
+            }
+        }));
+        //console.log(this.map);
+
         this.width = 10;
         this.height = 10;
-        this.map = [];
         this.aliveCell = 20;
         this.x = 0;
         this.y = 0;
         this.maxX = 9;
         this.maxY = 9;
-    }
-
-    init() {
-        let emptyMap = [];
-        for (let i = 0; i < this.width; i++) {
-            let row = [];
-            for (let j = 0; j < this.height; j++) {
-                row[j] = '0';
-            }
-            emptyMap.push(row);
-        }
-        this.map = emptyMap;
     }
     initUnknowMap() {
         let emptyMap = [];
@@ -112,13 +202,13 @@ class Map {
     fire(key) {
         switch (key) {
             case 'O':
-            console.log("Location: "+this.x+" "+this.y+" "+this.map[this.x][this.y]);
+                console.log("Location: " + this.x + " " + this.y + " " + this.map[this.x][this.y]);
                 switch (this.map[this.x][this.y]) {
-                    case '0':
+                    case 0:
                         this.map[this.x][this.y] = "miss";
                         console.log("Miss :v");
                         break;
-                    case 'alive':
+                    case 1:
                         this.map[this.x][this.y] = "hit";
                         this.aliveCell--;
                         console.log("Hit :D");
@@ -135,10 +225,9 @@ class Player {
         this.username = "";
         this.socket_id = "";
         this.device_id = "";
-        this.map = new Map;
-        this.map.init();
-        this.opponentMap = new Map;
-        this.opponentMap.initUnknowMap();
+        this.map = new Map();
+        //this.opponentMap = new Map();
+        //this.opponentMap.initUnknowMap();
         this.room = "";
     }
 
@@ -165,9 +254,6 @@ class Player {
     }
     setMap(map) {
         this.map = map;
-    }
-    getOpponentMap() {
-        return this.opponentMap;
     }
     getRoom() {
         return this.room;
@@ -229,7 +315,7 @@ server.listen(3000);
 console.log("Server is listening at port: 3000");
 
 io.on("connection", function (socket) {
-    console.log("ID connected: " + socket.id);
+    console.log("Socket ID connected: " + socket.id);
     socket.join("lobby");
     io.sockets.emit("deviceList", deviceList);
     io.sockets.emit("roomList", roomList);
@@ -241,7 +327,7 @@ io.on("connection", function (socket) {
             playerList[playerList.indexOf(playerInfo)].setSocketId(socket.id);
             socket.username = data;
             socket.emit("playerInfo", playerInfo);
-            console.log("Online players: " + JSON.stringify(playerList));
+            //console.log("Online players: " + JSON.stringify(playerList));
         } else {
             let nullplayer = new Player;
             nullplayer.setUsername("!!null!!");
@@ -257,7 +343,7 @@ io.on("connection", function (socket) {
             playerList.splice(playerList.indexOf(player), 1);
         }
         console.log("Loged out: " + socket.username);
-        console.log("Online players: " + JSON.stringify(playerList));
+        //console.log("Online players: " + JSON.stringify(playerList));
         socket.emit("logedOut");
     });
 
@@ -271,10 +357,10 @@ io.on("connection", function (socket) {
     });
 
     socket.on("room-gotoRoom", function (roomName) {
-        console.log("Go to room...");
+        //console.log("Go to room...");
         let room = roomList.find(el => el.getRoomName() == roomName);
         let status = false;
-
+        let yourMap;
         if (isEmpty(room)) {
             room = new Room;
             room.setRoomName(roomName);
@@ -283,6 +369,7 @@ io.on("connection", function (socket) {
             room.setNumberOfPlayer(1);
             playerList[playerList.indexOf(player1)].setRoom(roomName);
             socket.join(room.getRoomName());
+            yourMap = player1.getMap().getMap();
             status = true;
         } else {
             let player1 = room.getPlayer1();
@@ -292,12 +379,14 @@ io.on("connection", function (socket) {
                 playerList[playerList.indexOf(player)].setRoom(roomName);
                 room.setPlayer1(player);
                 room.setNumberOfPlayer(2);
+                yourMap = player.getMap().getMap();
                 status = true;
             } else if (player2 != undefined && player2.getUsername() == "") {
                 let player = playerList.find(el => el.getUsername() == socket.username);
                 playerList[playerList.indexOf(player)].setRoom(roomName);
                 room.setPlayer2(player);
                 room.setNumberOfPlayer(2);
+                yourMap = player.getMap().getMap();
                 status = true;
             } else {
                 status = false;
@@ -306,10 +395,11 @@ io.on("connection", function (socket) {
         if (status == true) {
             roomList.push(room);
             socket.emit("goToNewRoomBro", room);
+            socket.emit("yourMap",yourMap);
         } else {
             socket.emit("joinRoomFail");
         }
-        console.log("Room list: " + JSON.stringify(roomList));
+        //console.log("Room list: " + JSON.stringify(roomList));
         socket.broadcast.emit("roomList", roomList);
 
     });
@@ -345,13 +435,13 @@ app.post('/login', urlencodedParser, function (req, res) {
     let password = req.body.password;
     let newPlayer = new Player;
     newPlayer.setUsername(req.body.username);
-    console.log("New player: " + JSON.stringify(newPlayer));
+    //console.log("New player: " + JSON.stringify(newPlayer));
     try {
         db.selectPlayer(username, password, function (isExist) {
             // If account exists in database
             if (isExist) {
                 let foundPlayer = playerList.find(el => el.getUsername() == username);
-                console.log("Found player: " + JSON.stringify(foundPlayer));
+                //console.log("Found player: " + JSON.stringify(foundPlayer));
                 if (!isEmpty(foundPlayer)) {
                     // the array is defined and has at least one element
                     res.send({ "loginStatus": "onlined" });
@@ -390,7 +480,7 @@ app.post('/registerdevice', urlencodedParser, function (req, res) {
         deviceList.push(device_id);
         deviceListToChoice.push(device_id);
     }
-    console.log("Device list: " + deviceList);
+    //console.log("Device list: " + deviceList);
     io.sockets.emit("deviceList", deviceListToChoice);
     res.sendStatus(200);
 });
@@ -440,13 +530,19 @@ var fireInTheHole = function (device_id, key) {
                 // Then fire on current location on Player 2 map
                 let hitOrMiss = room.getPlayer2().getMap().fire(key);
                 io.to(player.getSocketId()).emit("hitOrMiss", hitOrMiss);
-                console.log("New P2 hitOrMiss:  " + hitOrMiss);
+                let notifyToPlayer2 = room.getPlayer2().getMap().getLocation();
+                notifyToPlayer2.push(hitOrMiss);
+                io.to(room.getPlayer2().getSocketId()).emit("opponentHitOrMissYou",notifyToPlayer2)
+                console.log("New P2 hitOrMiss:  " + notifyToPlayer2);
             } else if (room.getPlayer2().getUsername() == player.getUsername()) {
                 // If key was sent by Player 2
                 // Then fire on current location on Player 1 map
                 let hitOrMiss = room.getPlayer1().getMap().fire(key);
                 io.to(player.getSocketId()).emit("hitOrMiss", hitOrMiss);
-                console.log("New P1 hitOrMiss:  " + hitOrMiss);
+                let notifyToPlayer1 = room.getPlayer2().getMap().getLocation();
+                notifyToPlayer1.push(hitOrMiss);
+                io.to(room.getPlayer1().getSocketId()).emit("opponentHitOrMissYou",notifyToPlayer1)
+                console.log("New P1 hitOrMiss:  " + notifyToPlayer1);
             }
             return true;
         }

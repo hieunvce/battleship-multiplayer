@@ -160,6 +160,12 @@ td {
     border: solid 2px red;
 }
 
+.alive {
+    background: green;
+}
+.empty {
+    background: white;
+}
 .unknow {
     background: grey;
 }

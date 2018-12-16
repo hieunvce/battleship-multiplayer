@@ -59,13 +59,14 @@ $(document).ready(function () {
     });
 
     socket.on("goToNewRoomBro", function (newRoom) {
-        console.log("Go to new room" + JSON.stringify(newRoom));
+        //console.log("Go to new room" + JSON.stringify(newRoom));
         document.cookie = "userRoom=" + newRoom.roomName + ";path=/";
         $("#setDevice").hide();
         $("#setRoom").hide();
         $("#playGame").show(2000);
         $("#setMap").hide();
     });
+    
     socket.on("joinRoomFail", function () {
         $("#info").html(playerInfo.username);
     });
@@ -79,7 +80,7 @@ $(document).ready(function () {
 
     $(document).on("click", "#deviceList div.device", function () {
         let deviceName = $(this).text();
-        console.log("Device Name " + deviceName + " has been clicked");
+        //console.log("Device Name " + deviceName + " has been clicked");
         socket.emit("room-setDevice", deviceName);
     });
 
@@ -94,7 +95,7 @@ $(document).ready(function () {
 
     $(document).on("click", "#roomList div.room", function () {
         let roomName = $(this).text();
-        console.log("Room Name " + roomName + " has been clicked");
+        //console.log("Room Name " + roomName + " has been clicked");
         socket.emit("room-gotoRoom", roomName);
     });
 
@@ -107,8 +108,33 @@ $(document).ready(function () {
     var oldPositionX = 0;
     var oldPositionY = 0;
     var oldPositionClass = "unknow";
+    var yourMap;
+    
 
     //DRAW------------------------------------------------------------------
+    var drawMap = function(){
+        let init = '<tbody>';
+        for (let i = 0; i < 10; i++) {
+            let row = '<tr>';
+            for (let j = 0; j < 10; j++) {
+                if (yourMap[j][i]==0){
+                    row += '<td id="' + i + j + '" class="empty"></td>';
+                } else {
+                    row += '<td id="' + i + j + '" class="alive"></td>';
+                }
+            }
+            row += '</tr>';
+            init += row;
+        }
+        init += '</tbody>';
+        return init;
+    }
+    socket.on("yourMap",function(map){
+        yourMap = map;
+        console.log("My Map: ");
+        console.log(map);
+        $("#playerMap").html(drawMap());
+    });
     var initMap = function (classValue) {
         let init = '<tbody>';
         for (let i = 0; i < 10; i++) {
@@ -123,12 +149,6 @@ $(document).ready(function () {
         return init;
     }
 
-    var redrawMap = function (hitOrMiss) {
-        addClassToCell(currentX,currentY,hitOrMiss);
-        console.log("Add class "+hitOrMiss+" to cell "+currentX+" "+currentY);
-    }
-
-    $("#playerMap").html(initMap('empty'));
     $("#opponentMap").html(initMap('unknow'));
 
     var getCellClass = function (x, y) {
@@ -137,33 +157,64 @@ $(document).ready(function () {
         cellClass = $(cell).attr('class');
         return cellClass;
     }
-    var addClassToCell = function (x, y, className) {
-        let table = $("#opponentMap")[0];
+    var addClassToCell = function (map,x, y, className) {
+        let table;
+        // map=0: playerMap
+        // map=1: opponentMap
+        if (map==0){
+            table = $("#playerMap")[0];
+        } else {
+            table = $("#opponentMap")[0];
+        }
         let cell = table.rows[y].cells[x];
         $(cell).addClass(className);
     }
-    var removeClassFromCell = function (x, y, className) {
-        let table = $("#opponentMap")[0];
+    var removeClassFromCell = function (map,x, y, className) {
+        let table;
+        if (map==0){
+            table = $("#playerMap")[0];
+        } else {
+            table = $("#opponentMap")[0];
+        }
+        //console.log("Table: "+table+" Map:"+map);
+        //console.log("Cell of "+x+" "+y);
         let cell = table.rows[y].cells[x];
         $(cell).removeClass(className);
     }
 
+    var redrawOpponentMap = function (hitOrMiss) {
+        addClassToCell(1,currentX,currentY,hitOrMiss);
+        //console.log("Add class "+hitOrMiss+" to cell "+currentX+" "+currentY);
+    }
+    var redrawMyMap = function (notify) {
+        let x = notify[0];
+        let y=notify[1];
+        let hitOrMiss=notify[2];
+        //console.log("Add class "+hitOrMiss+" to cell "+x+" "+y);
+        addClassToCell(0,x,y,hitOrMiss);
+    }
+    
     socket.on("changeLocation", function (location) {
-        console.log("New location: " + JSON.stringify(location));
+        //console.log("New location: " + JSON.stringify(location));
         let x = location[0];
         let y = location[1];
         currentX=x;
         currentY=y;
-        console.log("Update location: " + x + ", " + y + " Old class: " + oldPositionClass);
-        removeClassFromCell(oldPositionX, oldPositionY, 'current');
+        console.log("Update location: " + x + ", " + y);// + " Old class: " + oldPositionClass);
+        removeClassFromCell(1,oldPositionX, oldPositionY, 'current');
         oldPositionX = x;
         oldPositionY = y;
         oldPositionClass = getCellClass(y, x);
-        addClassToCell(x, y, "current");
+        addClassToCell(1,x, y, "current");
     })
 
     socket.on("hitOrMiss", function (hitOrMiss) {
-        redrawMap(hitOrMiss);
+        console.log("On hitOrMiss: "+hitOrMiss);
+        redrawOpponentMap(hitOrMiss);
+    });
+    socket.on("opponentHitOrMissYou", function (notify) {
+        console.log("On opponent hitOrMiss: "+notify);
+        redrawMyMap(notify);
     });
 
 });
