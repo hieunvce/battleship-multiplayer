@@ -40,12 +40,17 @@ class Ship {
 
     applyHit(target) {
         // Kiem tra xem ban trung khong
-        let index = this.spots.indexOf(this.spots.find((spot) => spot.x == target.x && spot.y == target.y))
-        this.spots[index].hit = true;
+        let foundSpot = this.spots.find((spot) => spot.x == target.x && spot.y == target.y);
+        if (!isEmpty(foundSpot)) {
+            let index = this.spots.indexOf(foundSpot);
+            console.log("Target: " + JSON.stringify(target));
+            console.log("Apply Hit: name= " + this.name + " spot=" + JSON.stringify(this.spots[index]));
+            this.spots[index].hit = true;
 
-        // Neu tat ca ca diem da bi ban thi tau chim
-        if (this.spots.every(spot => spot.hit === true)) {
-            this.sunk = true;
+            // Neu tat ca ca diem da bi ban thi tau chim
+            if (this.spots.every(spot => spot.hit === true)) {
+                this.sunk = true;
+            }
         }
     }
 }
@@ -117,11 +122,12 @@ class Map {
                 count++;
             }
         }));
-        //console.log(this.map);
+        console.log("Map: " + this.map);
+        console.log("Ships: " + JSON.stringify(this.ships));
 
         this.width = 10;
         this.height = 10;
-        this.aliveCell = 20;
+        this.aliveCell = 18;
         this.x = 0;
         this.y = 0;
         this.maxX = 9;
@@ -211,7 +217,19 @@ class Map {
                     case 1:
                         this.map[this.x][this.y] = "hit";
                         this.aliveCell--;
-                        console.log("Hit :D");
+                        console.log("Hit :D Alive cell: " + this.aliveCell);
+                        for (let ship of this.ships) {
+                            ship.applyHit({ "x": this.x, "y": this.y });
+                            if (ship.sunk) {
+                                this.sunkenShips++;
+                                this.ships.splice(this.ships.indexOf(ship), 1);
+                                console.log("Removed one ship. Sunken ships: " + this.sunkenShips + "/5");
+                                if (this.sunkenShips >= 5) {
+                                    return "youWin";
+                                }
+                                return "sunkAShip";
+                            }
+                        }
                 }
                 break;
             case 'C':
@@ -310,6 +328,7 @@ var playerList = [];
 var roomList = [];
 var deviceList = [];
 var deviceListToChoice = [];
+var turn = 1;//Luot choi dau tien thuoc ve player 1
 
 server.listen(3000);
 console.log("Server is listening at port: 3000");
@@ -395,13 +414,18 @@ io.on("connection", function (socket) {
         if (status == true) {
             roomList.push(room);
             socket.emit("goToNewRoomBro", room);
-            socket.emit("yourMap",yourMap);
+            socket.emit("yourMap", yourMap);
         } else {
             socket.emit("joinRoomFail");
         }
         //console.log("Room list: " + JSON.stringify(roomList));
         socket.broadcast.emit("roomList", roomList);
 
+    });
+    socket.on("iwinhaha", function () {
+        let player = playerList.find(el => el.getUsername() == socket.username);
+        io.to(player.getRoom()).emit("gameOver");
+        io.to(player.getRoom()).emit("gameOver");
     });
     socket.on("disconnect", function () {
         console.log(socket.id + " has disconnected");
@@ -426,6 +450,10 @@ app.get("/room", function (req, res) {
 
 app.get("/setship", function (req, res) {
     res.render("setship");
+});
+
+app.get("/gamepad", function (req, res) {
+    res.render("gamepad");
 });
 
 
@@ -482,7 +510,7 @@ app.post('/registerdevice', urlencodedParser, function (req, res) {
     }
     //console.log("Device list: " + deviceList);
     io.sockets.emit("deviceList", deviceListToChoice);
-    res.sendStatus(200);
+    res.send({ "registerdevice": "success" })
 });
 
 var changeLocationOnOpponentMap = function (device_id, key) {
@@ -528,26 +556,45 @@ var fireInTheHole = function (device_id, key) {
             if (room.getPlayer1().getUsername() == player.getUsername()) {
                 // If key was sent by Player 1
                 // Then fire on current location on Player 2 map
-                let hitOrMiss = room.getPlayer2().getMap().fire(key);
-                io.to(player.getSocketId()).emit("hitOrMiss", hitOrMiss);
-                let notifyToPlayer2 = room.getPlayer2().getMap().getLocation();
-                notifyToPlayer2.push(hitOrMiss);
-                io.to(room.getPlayer2().getSocketId()).emit("opponentHitOrMissYou",notifyToPlayer2)
-                console.log("New P2 hitOrMiss:  " + notifyToPlayer2);
+                if (turn == 1) {
+                    let hitOrMiss = room.getPlayer2().getMap().fire(key);
+                    io.to(player.getSocketId()).emit("hitOrMiss", hitOrMiss);
+                    let notifyToPlayer2 = room.getPlayer2().getMap().getLocation();
+                    notifyToPlayer2.push(hitOrMiss);
+                    io.to(room.getPlayer2().getSocketId()).emit("opponentHitOrMissYou", notifyToPlayer2)
+                    console.log("New P2 hitOrMiss:  " + notifyToPlayer2);
+                    if (hitOrMiss=='hit')
+                    {
+                        turn = 1;
+                    } else {
+                        turn = 2; //Den luot nguoi choi 2 ban
+                    }
+                    
+                }
+                
             } else if (room.getPlayer2().getUsername() == player.getUsername()) {
                 // If key was sent by Player 2
                 // Then fire on current location on Player 1 map
-                let hitOrMiss = room.getPlayer1().getMap().fire(key);
-                io.to(player.getSocketId()).emit("hitOrMiss", hitOrMiss);
-                let notifyToPlayer1 = room.getPlayer2().getMap().getLocation();
-                notifyToPlayer1.push(hitOrMiss);
-                io.to(room.getPlayer1().getSocketId()).emit("opponentHitOrMissYou",notifyToPlayer1)
-                console.log("New P1 hitOrMiss:  " + notifyToPlayer1);
+                if (turn == 2) {
+                    let hitOrMiss = room.getPlayer1().getMap().fire(key);
+                    io.to(player.getSocketId()).emit("hitOrMiss", hitOrMiss);
+                    let notifyToPlayer1 = room.getPlayer1().getMap().getLocation();
+                    notifyToPlayer1.push(hitOrMiss);
+                    io.to(room.getPlayer1().getSocketId()).emit("opponentHitOrMissYou", notifyToPlayer1)
+                    console.log("New P1 hitOrMiss:  " + notifyToPlayer1);
+                    if (hitOrMiss=='hit')
+                    {
+                        turn = 2;
+                    } else {
+                        turn = 1; //Den luot nguoi choi 2 ban
+                    }
+                }
+                
             }
             return true;
         }
     } catch (err) {
-        console.log('Error location' + err);
+        console.log('Error hit' + err);
     }
 }
 
@@ -556,15 +603,15 @@ app.post('/device', urlencodedParser, function (req, res) {
     let key = req.body.key;
     if (key == 'U' || key == 'D' || key == 'L' || key == 'R') {
         if (changeLocationOnOpponentMap(device_id, key)) {
-            res.sendStatus(200);
+            res.send({ "status": "success" });
         } else {
-            res.sendStatus(400);
+            res.send({ "status": "failed" });
         };
     } else if (key == 'O' || key == 'C') {
         if (fireInTheHole(device_id, key)) {
-            res.sendStatus(200);
+            res.send({ "status": "success" });
         } else {
-            res.sendStatus(400);
+            res.send({ "status": "failed" });
         };
     }
 });

@@ -14,15 +14,14 @@
 
 <body>
     <div id="playerInfo">
-        <div id="player">WELCOME <strong><span id="playername"></span></strong></div>
+        <div id="player">Captain <strong><span id="playername"></span></strong></div>
         <input type="button" class="btn" id="logout" value="LOGOUT" />
     </div>
 
     <div id="setDevice">
         <div id="availableDevice">
             <div id="deviceInfo">
-                <div>Available Devices</div>
-                <div>Choose your device</div>
+                <div>Devices</div>
             </div>
             <br>
             <div id="deviceList">
@@ -38,7 +37,6 @@
         <div id="availableRoom">
             <div id="info">
                 <div>Available rooms</div>
-                <div>Choose one room to join and fight</div>
             </div>
             <br>
             <div id="roomList">
@@ -49,7 +47,7 @@
     <div id="setMap">Setmap</div>
 
     <div id="playGame">
-        <div id="timer">60</div>
+        <div id="timer">30</div>
         <div id="gameField">
             <div id="player">
                 <div id="playerStatus" class="status">
@@ -59,6 +57,10 @@
                     <table id="playerMap">
                     </table>
                 </div>
+            </div>
+            
+            <div id="sunkAShipBro">
+                <h2>Sunk A Ship Bro</h2>
             </div>
 
             <div id="opponent">
@@ -71,6 +73,19 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="youWin">
+        <h2>VICTORY</h2>
+        <img src="assets/victory.png" class = "icon" alt="victory">
+    </div>
+    <div id="youLose">
+        <h2>YOU LOOSE</h2>
+        <img src="assets/defeated.png" class = "icon" alt="defeated">
+    </div>
+    <div id="gameOver">
+            <h2>GAME OVER</h2>
+            <input type="button" class="btn" id="replay" value="REPLAY" />
     </div>
 
 </body>

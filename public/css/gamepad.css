@@ -1,0 +1,80 @@
+body {
+    text-align: center;
+    height: 100vh;
+    width: 100vw;
+    background: #6b5b95;
+}
+
+#device_id {
+    margin-top: 20px;
+    width: 40vw;
+    height: 2em;
+}
+
+#gamepadButton {
+    margin: auto;
+    margin-top: 50px;
+    width: 40vw;
+    display: grid;
+    grid-gap: 25px;
+    justify-content: space-around;
+    border: solid 1px black;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.grid-item {
+    background: #000;
+    color: #fff;
+    border: solid 1px black;
+    border-radius: 10px;
+    text-align: center;
+    height:4em;
+    width: 4em;
+}
+
+#left {
+    grid-column: 1/2;
+    grid-row: 2/3;
+}
+#right {
+    grid-column: 3/4;
+    grid-row: 2/3;
+}
+#up {
+    grid-column: 2/3;
+    grid-row: 1/2;
+}
+#down {
+    grid-column: 2/3;
+    grid-row: 3/4;
+}
+#ok {
+    grid-column: 2/3;
+    grid-row: 2/3;
+}
+#cancel {
+    grid-column: 2/3;
+    grid-row: 6/7;
+}
+#registerdevice{
+    margin-top: 1em;
+    background: #000;
+    color: #fff;
+    border: solid 1px black;
+    border-radius: 10px;
+    text-align: center;
+    height:3em;
+}
+#key{
+    margin: 2em auto;
+    color: #000;
+    background: #eee;
+    width: 20vw;
+}
+#sent{
+    margin: 2em auto;
+    color: #000;
+    background: #eee;
+    width: 20vw;
+}

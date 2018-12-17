@@ -3,6 +3,10 @@ $(document).ready(function () {
     $("#setMap").hide();
     $("#playGame").hide();
     $("#setDevice").show();
+    $("#youWin").hide();
+    $("#youLose").hide();
+    $("#gameOver").hide();
+    $("#sunkAShipBro").hide();
     $("#setRoom").show();
 
     function getCookie(cname) {
@@ -63,10 +67,14 @@ $(document).ready(function () {
         document.cookie = "userRoom=" + newRoom.roomName + ";path=/";
         $("#setDevice").hide();
         $("#setRoom").hide();
+        $("#youWin").hide();
+        $("#youLose").hide();
+        $("#gameOver").hide();
+        $("#sunkAShipBro").hide();
         $("#playGame").show(2000);
         $("#setMap").hide();
     });
-    
+
     socket.on("joinRoomFail", function () {
         $("#info").html(playerInfo.username);
     });
@@ -103,21 +111,24 @@ $(document).ready(function () {
 
     //GAME------------------------------------------------------------------
     //GAME Variables---------------------------------------------------------------
-    var currentX=0;
-    var currentY=0;
+    var currentX = 0;
+    var currentY = 0;
     var oldPositionX = 0;
     var oldPositionY = 0;
     var oldPositionClass = "unknow";
     var yourMap;
-    
+    var win = false;
+    var timer = 30;
+    var timerSecond=30;
+
 
     //DRAW------------------------------------------------------------------
-    var drawMap = function(){
+    var drawMap = function () {
         let init = '<tbody>';
         for (let i = 0; i < 10; i++) {
             let row = '<tr>';
             for (let j = 0; j < 10; j++) {
-                if (yourMap[j][i]==0){
+                if (yourMap[j][i] == 0) {
                     row += '<td id="' + i + j + '" class="empty"></td>';
                 } else {
                     row += '<td id="' + i + j + '" class="alive"></td>';
@@ -129,7 +140,7 @@ $(document).ready(function () {
         init += '</tbody>';
         return init;
     }
-    socket.on("yourMap",function(map){
+    socket.on("yourMap", function (map) {
         yourMap = map;
         console.log("My Map: ");
         console.log(map);
@@ -157,11 +168,11 @@ $(document).ready(function () {
         cellClass = $(cell).attr('class');
         return cellClass;
     }
-    var addClassToCell = function (map,x, y, className) {
+    var addClassToCell = function (map, x, y, className) {
         let table;
         // map=0: playerMap
         // map=1: opponentMap
-        if (map==0){
+        if (map == 0) {
             table = $("#playerMap")[0];
         } else {
             table = $("#opponentMap")[0];
@@ -169,9 +180,9 @@ $(document).ready(function () {
         let cell = table.rows[y].cells[x];
         $(cell).addClass(className);
     }
-    var removeClassFromCell = function (map,x, y, className) {
+    var removeClassFromCell = function (map, x, y, className) {
         let table;
-        if (map==0){
+        if (map == 0) {
             table = $("#playerMap")[0];
         } else {
             table = $("#opponentMap")[0];
@@ -183,38 +194,88 @@ $(document).ready(function () {
     }
 
     var redrawOpponentMap = function (hitOrMiss) {
-        addClassToCell(1,currentX,currentY,hitOrMiss);
+        addClassToCell(1, currentX, currentY, hitOrMiss);
         //console.log("Add class "+hitOrMiss+" to cell "+currentX+" "+currentY);
     }
     var redrawMyMap = function (notify) {
         let x = notify[0];
-        let y=notify[1];
-        let hitOrMiss=notify[2];
+        let y = notify[1];
+        let hitOrMiss = notify[2];
         //console.log("Add class "+hitOrMiss+" to cell "+x+" "+y);
-        addClassToCell(0,x,y,hitOrMiss);
+        addClassToCell(0, x, y, hitOrMiss);
     }
-    
+
+    var sunkAShip = function () {
+        console.log("Sunk A Ship");
+        $("#sunkAShipBro").show();
+        setTimeout(function () {
+            $("#sunkAShipBro").hide();
+        }, 2000);
+    }
+    var youWin = function () {
+        console.log("youWin");
+        $("#setMap").hide();
+        $("#playGame").hide();
+        $("#setDevice").hide();
+        $("#setRoom").hide();
+        $("#youWin").show();
+        win = true;
+        socket.emit("iwinhaha");
+    }
     socket.on("changeLocation", function (location) {
         //console.log("New location: " + JSON.stringify(location));
         let x = location[0];
         let y = location[1];
-        currentX=x;
-        currentY=y;
+        currentX = x;
+        currentY = y;
         console.log("Update location: " + x + ", " + y);// + " Old class: " + oldPositionClass);
-        removeClassFromCell(1,oldPositionX, oldPositionY, 'current');
+        removeClassFromCell(1, oldPositionX, oldPositionY, 'current');
         oldPositionX = x;
         oldPositionY = y;
         oldPositionClass = getCellClass(y, x);
-        addClassToCell(1,x, y, "current");
+        addClassToCell(1, x, y, "current");
     })
 
     socket.on("hitOrMiss", function (hitOrMiss) {
-        console.log("On hitOrMiss: "+hitOrMiss);
-        redrawOpponentMap(hitOrMiss);
+        console.log("On hitOrMiss: " + hitOrMiss);
+        if (hitOrMiss == "hit" || hitOrMiss == "miss") {
+            redrawOpponentMap(hitOrMiss);
+        } else if (hitOrMiss == "sunkAShip") {
+            redrawOpponentMap("hit");
+            // thong bao ban chim mot tau
+            sunkAShip();
+        } else if (hitOrMiss == "youWin") {
+            redrawOpponentMap("hit");
+            // thong bao thang cuoc
+            youWin();
+        }
+
     });
     socket.on("opponentHitOrMissYou", function (notify) {
-        console.log("On opponent hitOrMiss: "+notify);
+        console.log("On opponent hitOrMiss: " + notify);
         redrawMyMap(notify);
+        for (let i=30;i>0;i--){
+            setInterval(function(){ $("#timer").html(timer); }, 1000);
+            timer--;
+        }
+        timer=timerSecond;
+    });
+    socket.on("gameOver", function () {
+        if (win == false) {
+            $("#setMap").hide();
+            $("#playGame").hide();
+            $("#setDevice").hide();
+            $("#setRoom").hide();
+            $("#youLose").show();
+            setTimeout(function () {
+                $("#youLose").hide();
+                $("#gameOver").show();
+            }, 3000);
+        } else {
+            setTimeout(function () {
+                $("#gameOver").show();
+            }, 3000);
+        }
     });
 
 });
