@@ -330,7 +330,7 @@ var deviceList = [];
 var deviceListToChoice = [];
 var turn = 1;//Luot choi dau tien thuoc ve player 1
 
-server.listen(3000);
+server.listen(process.env.PORT || 3000);
 console.log("Server is listening at port: 3000");
 
 io.on("connection", function (socket) {

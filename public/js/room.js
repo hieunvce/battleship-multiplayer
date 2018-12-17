@@ -27,7 +27,7 @@ $(document).ready(function () {
     var logedInUser = getCookie("username");
     console.log("Cookie username: " + logedInUser);
 
-    var socket = io("http://localhost:3000");
+    var socket = io("https://battleshipp.herokuapp.com");
     socket.emit("room-username", logedInUser);
 
     socket.on("deviceList", function (data) {
