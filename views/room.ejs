@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Battleship Room</title>
+    <title>Battleship Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="screen" href="css/room.css" />
     <script src="https://battleshipp.herokuapp.com/socket.io/socket.io.js"></script>
@@ -48,6 +48,7 @@
 
     <div id="playGame">
         <div id="timer">30</div>
+        <div id="turn">...</div>
         <div id="gameField">
             <div id="player">
                 <div id="playerStatus" class="status">
@@ -63,6 +64,7 @@
                 <h2>Sunk A Ship Bro</h2>
             </div>
 
+           
             <div id="opponent">
                 <div id="opponentStatus" class="status">
                     Opponent

@@ -278,4 +278,13 @@ $(document).ready(function () {
         }
     });
 
+    socket.on("yourTurn",function(){
+        $("#turn").html("");
+        $("#turn").html("Your Turn");
+    });
+    socket.on("opponentTurn",function(){
+        $("#turn").html("");
+        $("#turn").html("Opponent Turn");
+    });
+
 });

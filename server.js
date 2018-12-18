@@ -563,11 +563,15 @@ var fireInTheHole = function (device_id, key) {
                     notifyToPlayer2.push(hitOrMiss);
                     io.to(room.getPlayer2().getSocketId()).emit("opponentHitOrMissYou", notifyToPlayer2)
                     console.log("New P2 hitOrMiss:  " + notifyToPlayer2);
-                    if (hitOrMiss=='hit')
+                    if (hitOrMiss=='hit' || hitOrMiss=='sunkAShip')
                     {
                         turn = 1;
+                        io.to(player.getSocketId()).emit("yourTurn");
+                        io.to(room.getPlayer2().getSocketId()).emit("opponentTurn");
                     } else {
                         turn = 2; //Den luot nguoi choi 2 ban
+                        io.to(player.getSocketId()).emit("opponentTurn");
+                        io.to(room.getPlayer2().getSocketId()).emit("yourTurn");
                     }
                     
                 }
@@ -582,11 +586,15 @@ var fireInTheHole = function (device_id, key) {
                     notifyToPlayer1.push(hitOrMiss);
                     io.to(room.getPlayer1().getSocketId()).emit("opponentHitOrMissYou", notifyToPlayer1)
                     console.log("New P1 hitOrMiss:  " + notifyToPlayer1);
-                    if (hitOrMiss=='hit')
+                    if (hitOrMiss=='hit' || hitOrMiss=='sunkAShip')
                     {
                         turn = 2;
+                        io.to(player.getSocketId()).emit("yourTurn");
+                        io.to(room.getPlayer1().getSocketId()).emit("opponentTurn");
                     } else {
-                        turn = 1; //Den luot nguoi choi 2 ban
+                        turn = 1; //Den luot nguoi choi 1 ban
+                        io.to(player.getSocketId()).emit("opponentTurn");
+                        io.to(room.getPlayer1().getSocketId()).emit("yourTurn");
                     }
                 }
                 
