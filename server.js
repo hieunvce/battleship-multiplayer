@@ -336,7 +336,7 @@ console.log("Server is listening at port: 3000");
 io.on("connection", function (socket) {
     console.log("Socket ID connected: " + socket.id);
     socket.join("lobby");
-    io.sockets.emit("deviceList", deviceList);
+    io.sockets.emit("deviceList", deviceListToChoice);
     io.sockets.emit("roomList", roomList);
 
     socket.on("room-username", function (data) {
