@@ -10,10 +10,6 @@ body {
     height: 100%;
     font-family: 'Gravedigger', serif;
     background: #7E78D2;
-    background-image: url("../assets/background.png");
-    background-repeat: no-repeat;
-    background-position: center;
-    position: relative;
 }
 
 .btn {

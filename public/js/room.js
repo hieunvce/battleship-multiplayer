@@ -1,5 +1,6 @@
 $(document).ready(function () {
     // Nho sua lai khi xong viec
+    $("#timer").hide();
     $("#setMap").hide();
     $("#playGame").hide();
     $("#setDevice").show();
