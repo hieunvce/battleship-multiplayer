@@ -3,7 +3,7 @@ var mysql = require("mysql");
 var pool = mysql.createConnection({
     host: 'db4free.net',
     user: 'hieunv',
-    password: '12345678',
+    password: '5a0c5847',
     database: 'battlesh_ip',
 });
 
