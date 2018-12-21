@@ -3,12 +3,12 @@ $(document).ready(function () {
     $("#timer").hide();
     $("#setMap").hide();
     $("#playGame").hide();
-    $("#setDevice").show();
+    $("#setDevice").hide();
     $("#youWin").hide();
-    $("#youLose").hide();
+    $("#youLose").show();
     $("#gameOver").hide();
     $("#sunkAShipBro").hide();
-    $("#setRoom").show();
+    $("#setRoom").hide();
 
     function getCookie(cname) {
         var name = cname + "=";

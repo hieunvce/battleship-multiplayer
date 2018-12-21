@@ -1,0 +1,49 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: µVision V5.25.2.0
+Copyright (C) 2018 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: Le Pha, UIT, LIC=CZL01-CSUH3-LQ80Q-NW340-TI5FM-GU595
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Plus  Version: 5.25.2.0
+Toolchain Path:  C:\Keil_v5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 6 (build 750)
+Assembler:       Armasm.exe V5.06 update 6 (build 750)
+Linker/Locator:  ArmLink.exe V5.06 update 6 (build 750)
+Library Manager: ArmAr.exe V5.06 update 6 (build 750)
+Hex Converter:   FromElf.exe V5.06 update 6 (build 750)
+CPU DLL:         SARMCM3.DLL V5.25.2.0
+Dialog DLL:      DARMCM1.DLL V1.19.1.0
+Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.0.1.0
+Dialog DLL:      TARMCM1.DLL V1.14.0.0
+ 
+<h2>Project:</h2>
+C:\Users\Cong Phase\Desktop\code-v1\code-v1\Project\KeilC\smpl_GPIO_Interrupt.uvproj
+Project File Date:  11/14/2018
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.06 update 6 (build 750)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
+Build target 'smpl_GPIO_Interrupt'
+creating preprocessor file for core_cm0.c...
+creating preprocessor file for system_NUC1xx.c...
+creating preprocessor file for smpl_GPIO_Interrupt.c...
+creating preprocessor file for DrvGPIO.c...
+creating preprocessor file for DrvSYS.c...
+compiling smpl_GPIO_Interrupt.c...
+smpl_GPIO_Interrupt.c(57): warning:  #188-D: enumerated type mixed with another type
+    DrvGPIO_SetDebounceTime(5, 1);
+smpl_GPIO_Interrupt.c: 1 warning, 0 errors
+creating preprocessor file for DrvUART.c...
+linking...
+Program Size: Code=5336 RO-data=240 RW-data=64 ZI-data=1120  
+FromELF: creating hex file...
+After Build - User command #1: fromelf --bin ".\obj\Smpl_GPIO_Interrupt.axf" --output ".\obj\Smpl_GPIO_Interrupt.bin"
+After Build - User command #2: fromelf --text -c ".\obj\Smpl_GPIO_Interrupt.axf" --output ".\obj\Smpl_GPIO_Interrupt.txt"
+".\obj\Smpl_GPIO_Interrupt.axf" - 0 Error(s), 1 Warning(s).
+Build Time Elapsed:  00:00:06
+</pre>
+</body>
+</html>

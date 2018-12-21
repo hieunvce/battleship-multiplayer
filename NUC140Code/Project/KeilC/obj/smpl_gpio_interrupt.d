@@ -1,0 +1,11 @@
+.\obj\smpl_gpio_interrupt.o: smpl_GPIO_Interrupt.c
+.\obj\smpl_gpio_interrupt.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\obj\smpl_gpio_interrupt.o: ..\..\Include\Driver\DrvUART.h
+.\obj\smpl_gpio_interrupt.o: ..\..\CMSIS\CM0\DeviceSupport\Nuvoton\NUC1xx\NUC1xx.h
+.\obj\smpl_gpio_interrupt.o: ..\..\CMSIS\CM0\CoreSupport\core_cm0.h
+.\obj\smpl_gpio_interrupt.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\obj\smpl_gpio_interrupt.o: ..\..\CMSIS\CM0\DeviceSupport\Nuvoton\NUC1xx\system_NUC1xx.h
+.\obj\smpl_gpio_interrupt.o: ..\..\Include\System\SysInfra.h
+.\obj\smpl_gpio_interrupt.o: ..\..\Include\System\ModuleID.h
+.\obj\smpl_gpio_interrupt.o: ..\..\Include\Driver\DrvGPIO.h
+.\obj\smpl_gpio_interrupt.o: ..\..\Include\Driver\DrvSYS.h
